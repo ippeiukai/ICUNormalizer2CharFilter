@@ -1,0 +1,2 @@
+ICUNormalizer2CharFilter
+Copyright 2012 Ippei UKAI
