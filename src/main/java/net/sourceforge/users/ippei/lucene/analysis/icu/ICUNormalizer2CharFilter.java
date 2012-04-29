@@ -42,7 +42,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
   
   private boolean inputFinished;
   private boolean afterQuickCheckYes;
-  private int checkedInputIndex;
+  private int checkedInputBoundary;
   private int charCount;
   
   public ICUNormalizer2CharFilter(CharStream in, Form form) {
@@ -71,7 +71,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
   
   private void resetFields() {
     inputBuffer.delete(0, inputBuffer.length());
-    checkedInputIndex = 0;
+    checkedInputBoundary = 0;
     resultBuffer.delete(0, resultBuffer.length());
     inputFinished = false;
     afterQuickCheckYes = false;
@@ -91,7 +91,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
         "off >= cbuf.length");
     if (len <= 0) throw new IllegalArgumentException("len <= 0");
     
-    while (true) {
+    while (!inputFinished || inputBuffer.length() > 0 || resultBuffer.length() > 0) {
       int retLen;
       
       if (resultBuffer.length() > 0) {
@@ -109,13 +109,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
         }
       }
       
-      if (inputFinished) break;
       readInputToBuffer();
-    }
-    
-    if (resultBuffer.length() > 0) {
-      int resLen = outputFromResultBuffer(cbuf, off, len);
-      return resLen;
     }
     
     return -1;
@@ -144,7 +138,9 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
       if (resLen > 0) return resLen;
     }
     int resLen = readFromIoNormalizeUptoBoundary(resultBuffer);
-    afterQuickCheckYes = false;
+    if(resLen > 0){
+      afterQuickCheckYes = false;
+    }
     return resLen;
   }
   
@@ -153,7 +149,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
     if (end > 0) {
       resultBuffer.append(inputBuffer.subSequence(0, end));
       inputBuffer.delete(0, end);
-      checkedInputIndex = max(checkedInputIndex - end, 0);
+      checkedInputBoundary = max(checkedInputBoundary - end, 0);
       charCount += end;
     }
     return end;
@@ -167,55 +163,58 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
     boolean foundBoundary = false;
     final int bufLen = inputBuffer.length();
     
-    while (checkedInputIndex < bufLen - 1) {
-      ++checkedInputIndex;
+    while (checkedInputBoundary < bufLen - 1) {
+      ++checkedInputBoundary;
       if (normalizer.hasBoundaryBefore(inputBuffer
-          .charAt(checkedInputIndex + 1))) {
+          .charAt(checkedInputBoundary))) {
         foundBoundary = true;
         break;
       } else if (normalizer.hasBoundaryAfter(inputBuffer
-          .charAt(checkedInputIndex))) {
+          .charAt(checkedInputBoundary - 1))) {
         foundBoundary = true;
         break;
       }
     }
-    if (checkedInputIndex == bufLen - 1) {
-      if (normalizer.hasBoundaryAfter(inputBuffer.charAt(checkedInputIndex))
+    if (checkedInputBoundary == bufLen - 1) {
+      if (normalizer.hasBoundaryAfter(inputBuffer.charAt(checkedInputBoundary))
           || inputFinished) {
         foundBoundary = true;
-        ++checkedInputIndex;
+        ++checkedInputBoundary;
       }
     }
     if (!foundBoundary) {
       return 0;
     }
     
-    return normalizeInputAndOutputUpto(checkedInputIndex + 1);
+    return normalizeInputUpto(checkedInputBoundary);
   }
   
-  private int normalizeInputAndOutputUpto(final int length) {
+  private int normalizeInputUpto(final int length) {
     final int destOrigLen = resultBuffer.length();
     normalizer.normalizeSecondAndAppend(resultBuffer,
         inputBuffer.subSequence(0, length));
     inputBuffer.delete(0, length);
-    checkedInputIndex -= length;
+    checkedInputBoundary = max(checkedInputBoundary - length, 0);
     final int resultLength = resultBuffer.length() - destOrigLen;
     recordOffsetDiff(length, resultLength);
-    charCount += resultLength;
     return resultLength;
   }
   
-  private void recordOffsetDiff(int before, int after) {
-    if (before == after) return;
-    final int diff = (before - after);
-    final int cumuDiff = getLastCumulativeDiff() + diff;
-    if (diff >= 0) {
-      addOffCorrectMap(charCount, cumuDiff);
-    } else {
-      for (int i = -diff; i > 0; --i) {
-        addOffCorrectMap(charCount - i, cumuDiff + i - 1);
-      }
+  private void recordOffsetDiff(int inputLength, int outputLength) {
+    if (inputLength == outputLength) {
+      charCount += outputLength;
+      return;
     }
+    final int diff = inputLength - outputLength;
+    final int cumuDiff = getLastCumulativeDiff();
+    if (diff < 0) {
+      for (int i = 1;  i <= -diff; ++i) {
+        addOffCorrectMap(charCount + i, cumuDiff - i);
+      }
+    } else {
+      addOffCorrectMap(charCount + 1, cumuDiff + diff);
+    }
+    charCount += outputLength;
   }
   
   private int outputFromResultBuffer(char[] cbuf, int begin, int len) {

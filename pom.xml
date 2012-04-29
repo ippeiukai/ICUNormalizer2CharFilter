@@ -26,6 +26,12 @@
   		<artifactId>icu4j</artifactId>
   		<version>4.8.1.1</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.apache.lucene</groupId>
+  		<artifactId>lucene-analyzers</artifactId>
+  		<version>3.6.0</version>
+  		<scope>test</scope>
+  	</dependency>
   </dependencies>
   <url>http://github.com/ippeiukai/ICUNormalizer2CharFilter</url>
 </project>
