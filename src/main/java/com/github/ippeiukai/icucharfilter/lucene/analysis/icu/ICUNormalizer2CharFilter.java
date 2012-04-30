@@ -226,7 +226,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
   
   private int outputFromResultBuffer(char[] cbuf, int begin, int len) {
     len = min(resultBuffer.length(), len);
-    resultBuffer.getChars(0, min(resultBuffer.length(), len), cbuf, begin);
+    resultBuffer.getChars(0, len, cbuf, begin);
     if (len > 0) {
       resultBuffer.delete(0, len);
     }
