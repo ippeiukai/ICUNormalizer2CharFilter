@@ -2,7 +2,7 @@
  * ICUNormalizer2CharFilter
  * Copyright 2010-2012 Ippei Ukai
  */
-package net.sourceforge.users.ippei.lucene.analysis.icu;
+package com.github.ippeiukai.icucharfilter.lucene.analysis.icu;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -45,12 +45,19 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
   private int checkedInputBoundary;
   private int charCount;
   
-  public ICUNormalizer2CharFilter(CharStream in, Form form) {
-    this(in, form.normalizer);
+  /**
+   * default is NFKC_CF
+   */
+  public ICUNormalizer2CharFilter(CharStream in) {
+    this(in, Form.NFKC_CF);
   }
   
   public ICUNormalizer2CharFilter(Reader in, Form form) {
-    this(CharReader.get(in), form.normalizer);
+    this(CharReader.get(in), form);
+  }
+  
+  public ICUNormalizer2CharFilter(CharStream in, Form form) {
+    this(in, form.normalizer);
   }
   
   public ICUNormalizer2CharFilter(CharStream in, Normalizer2 normalizer) {

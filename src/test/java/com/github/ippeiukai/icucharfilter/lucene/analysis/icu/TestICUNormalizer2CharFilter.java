@@ -2,7 +2,7 @@
  * ICUNormalizer2CharFilter
  * Copyright 2010-2012 Ippei Ukai
  */
-package net.sourceforge.users.ippei.lucene.analysis.icu;
+package com.github.ippeiukai.icucharfilter.lucene.analysis.icu;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -14,6 +14,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.ngram.NGramTokenizer;
 import org.junit.Test;
 
+import com.github.ippeiukai.icucharfilter.lucene.analysis.icu.ICUNormalizer2CharFilter;
 import com.ibm.icu.text.Normalizer2;
 
 public class TestICUNormalizer2CharFilter extends BaseTokenStreamTestCase {
