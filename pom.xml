@@ -32,6 +32,11 @@
   		<version>3.6.0</version>
   		<scope>test</scope>
   	</dependency>
+  	<dependency>
+  		<groupId>org.apache.solr</groupId>
+  		<artifactId>solr-core</artifactId>
+  		<version>3.6.0</version>
+  	</dependency>
   </dependencies>
   <url>http://github.com/ippeiukai/ICUNormalizer2CharFilter</url>
 </project>

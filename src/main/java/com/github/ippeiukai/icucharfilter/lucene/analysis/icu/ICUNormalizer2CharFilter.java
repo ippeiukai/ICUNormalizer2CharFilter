@@ -34,7 +34,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
     }
   }
   
-  private static final int IO_BUFFER_SIZE = 1024;
+  private static final int IO_BUFFER_SIZE = 128;
   
   private final Normalizer2 normalizer;
   private final StringBuilder inputBuffer;
