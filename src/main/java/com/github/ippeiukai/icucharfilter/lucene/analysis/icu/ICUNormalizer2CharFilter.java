@@ -219,7 +219,7 @@ public class ICUNormalizer2CharFilter extends BaseCharFilter {
         addOffCorrectMap(charCount + i, cumuDiff - i);
       }
     } else {
-      addOffCorrectMap(charCount + 1, cumuDiff + diff);
+      addOffCorrectMap(charCount + Math.min(1, outputLength), cumuDiff + diff);
     }
     charCount += outputLength;
   }
